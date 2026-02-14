@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Desbloqueo Coqueto</title>
+<style>
+  body,html {
+    margin:0; padding:0; height:100vh; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    display:flex; justify-content:center; align-items:center;
+    background: #fff0f6;
+    overflow: hidden;
+  }
+  /* Pantalla inicial con candado corazón */
+  #screen1 {
+    display:flex; flex-direction: column; align-items:center; justify-content:center;
+    cursor:pointer;
+  }
+  #heartLock {
+    width: 120px; height:120px;
+    background: red;
+    clip-path: polygon(
+      50% 0%, 
+      85% 20%, 
+      100% 50%, 
+      85% 85%, 
+      50% 100%, 
+      15% 85%, 
+      0% 50%, 
+      15% 20%
+    );
+    box-shadow: 0 0 12px 4px rgba(255,0,80,0.7);
+    position: relative;
+    animation: heartbeat 1.5s infinite;
+  }
+  @keyframes heartbeat {
+    0%,100% { transform: scale(1); }
+    50% { transform: scale(1.1);}
+  }
+  #screen1 p {
+    margin-top: 15px;
+    font-size: 2rem;
+    color: #d60050;
+    text-shadow: 0 0 5px #ff4081;
+  }
+  /* Pantalla bloqueo */
+  #screen2 {
+    display:none;
+    flex-direction: column; 
+    align-items:center; 
+    justify-content:center;
+    width: 100vw;
+    height: 100vh;
+    background: #ffc0cb;
+    position:relative;
+  }
+  #lockDate {
+    font-size: 2.5rem;
+    color: #880e4f;
+    font-weight: 700;
+    margin-bottom: 35px;
+    text-align: center;
+    letter-spacing: 1px;
+  }
+  #pinInput {
+    display:flex; margin-bottom:10px;
+  }
+  .pin-dot {
+    width: 22px;
+    height: 22px;
+    margin: 0 6px;
+    border-radius: 50%;
+    background-color: #ffe6f0;
+    border: 2px solid #880e4f;
+    box-shadow: inset 0 0 5px #880e4faa;
+  }
+  .pin-dot.filled {
+    background-color: #880e4f;
+    box-shadow: 0 0 10px #d60050;
+  }
+  /* Teclado */
+  #keyboard {
+    width: 280px;
+    display:grid;
+    grid-template-columns: repeat(3,1fr);
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+  .key {
+    background: #fff0f6;
+    border: 2px solid #880e4f;
+    border-radius: 12px;
+    font-weight: 700;
+    font-size: 1.8rem;
+    color: #880e4f;
+    cursor: pointer;
+    box-shadow: 0 4px 0 #7b0e45;
+    user-select:none;
+    transition: background 0.3s;
+  }
+  .key:active {
+    background:#d60050;
+    color:#fff;
+    box-shadow: none;
+    transform: translateY(2px);
+  }
+  #errorMsg {
+    color: #fff;
+    background: #d60050;
+    border-radius: 12px;
+    padding: 10px 20px;
+    font-weight: 700;
+    display:none;
+    margin-bottom:15px;
+    text-shadow: 0 0 5px #ffb3c6;
+  }
+  #attempts {
+    color: #880e4f;
+    font-weight: 700;
+    text-shadow: 0 0 5px #ff80ab;
+    margin-bottom: 15px;
+  }
+  #btnVerify {
+    background: #880e4f;
+    color: white;
+    border:none;
+    border-radius: 12px;
+    font-size: 1.3rem;
+    padding: 10px 30px;
+    cursor: pointer;
+    box-shadow: 0 4px 0 #7b0e45;
+    user-select:none;
+    transition: background 0.3s;
+  }
+  #btnVerify:active {
+    background:#d60050;
+    box-shadow:none;
+    transform: translateY(2px);
+  }
+  /* Pantalla final te amo */
+  #screen3 {
+    display:none;
+    align-items:center;
+    justify-content:center;
+    flex-direction: column;
+    /* background: linear-gradient(to bottom, #ffc0cb, #fff0f6); */
+    height: 100vh;
+    width: 100vw;
+    position: relative;
+    overflow: hidden;
+    padding-top: 40px;
+    box-sizing: border-box;
+    background-size: cover;
+    background-position: center center;
+    background-repeat: no-repeat;
+  }
+  #finalText {
+    font-size: 4rem;
+    font-weight: 900;
+    color: #d60050;
+    text-shadow: 0 0 15px #ff4081;
+    margin-bottom: 30px;
+    user-select:none;
+    text-align: center;
+  }
+  #attemptsFinal {
+    color: #880e4f;
+    font-weight: 700;
+    text-shadow: 0 0 5px #ff80ab;
+    margin-bottom: 30px;
+    font-size: 1.5rem;
+    user-select:none;
+  }
+  #flowerBouquet {
+    width: 150px;
+    height: auto;
+    filter: drop-shadow(0 0 5px #d60050aa);
+    margin-bottom: 50px;
+  }
+  /* Corazones cayendo */
+  .falling-heart {
+    position: absolute;
+    width: 25px;
+    height: 25px;
+    background: red;
+    clip-path: polygon(
+      50% 0%, 
+      85% 20%, 
+      100% 50%, 
+      85% 85%, 
+      50% 100%, 
+      15% 85%, 
+      0% 50%, 
+      15% 20%
+    );
+    opacity: 0.75;
+    animation-name: fall;
+    animation-timing-function: linear;
+    animation-iteration-count: infinite;
+  }
+  @keyframes fall{
+    0% {top: -30px; opacity: 0.75;}
+    100% {top: 110vh; opacity: 0;}
+  }
+</style>
+</head>
+<body>
+  <!-- Pantalla 1: Candado corazón -->
+  <div id="screen1">
+    <div id="heartLock" title="Haz clic para desbloquear"></div>
+    <p>as clic</p>
+  </div>
+
+  <!-- Pantalla 2: Pantalla de bloqueo con teclado -->
+  <div id="screen2">
+    <div id="lockDate">¿Me amas de verdad, mi amor?</div>
+    <div id="pinInput">
+      <div class="pin-dot"></div>
+      <div class="pin-dot"></div>
+      <div class="pin-dot"></div>
+      <div class="pin-dot"></div>
+      <div class="pin-dot"></div>
+      <div class="pin-dot"></div>
+      <div class="pin-dot"></div>
+      <div class="pin-dot"></div>
+    </div>
+    <div id="errorMsg">Error</div>
+    <div id="attempts"></div>
+    <div id="keyboard">
+      <button class="key">1</button>
+      <button class="key">2</button>
+      <button class="key">3</button>
+      <button class="key">4</button>
+      <button class="key">5</button>
+      <button class="key">6</button>
+      <button class="key">7</button>
+      <button class="key">8</button>
+      <button class="key">9</button>
+      <button class="key" id="delKey">&larr;</button>
+      <button class="key">0</button>
+      <button class="key" id="btnVerify">OK</button>
+    </div>
+  </div>
+
+  <!-- Pantalla 3: Te amo final -->
+  <div id="screen3">
+    <div id="finalText">¡Te Amo!</div>
+    <div id="attemptsFinal"></div>
+    <img id="flowerBouquet" src="https://cdn-icons-png.flaticon.com/512/616/616408.png" alt="Ramo de flores" />
+  </div>
+
+<script>
+  const screen1 = document.getElementById('screen1');
+  const screen2 = document.getElementById('screen2');
+  const screen3 = document.getElementById('screen3');
+  const pinDots = document.querySelectorAll('.pin-dot');
+  const keys = document.querySelectorAll('.key');
+  const errorMsg = document.getElementById('errorMsg');
+  const attemptsDiv = document.getElementById('attempts');
+  const attemptsFinalDiv = document.getElementById('attemptsFinal');
+  const btnVerify = document.getElementById('btnVerify');
+  const delKey = document.getElementById('delKey');
+
+  let pin = "";
+  let attemptsCount = 0;
+
+  const correctPin = "29032025";
+
+  // Cambia aquí la URL de la imagen para el fondo final
+  const finalBackgroundImageURL = "https://uploads.onecompiler.io/43w8h5wth/44djcguej/67064.jpg";
+
+  // Manejar clic para pasar de pantalla1 a pantalla2
+  screen1.onclick = () => {
+    screen1.style.display = 'none';
+    screen2.style.display = 'flex';
+    errorMsg.style.display = 'none';
+    attemptsDiv.textContent = '';
+    resetPin();
+  };
+
+  // Actualizar indicadores de PIN
+  function updateDots() {
+    pinDots.forEach((dot, i) => {
+      if(i < pin.length) {
+        dot.classList.add('filled');
+      } else {
+        dot.classList.remove('filled');
+      }
+    });
+  }
+  // Resetear PIN digitado
+  function resetPin() {
+    pin = "";
+    updateDots();
+  }
+
+  // Click en teclado
+  keys.forEach(k => {
+    if(k.id === 'btnVerify' || k.id === 'delKey') return;
+    k.onclick = () => {
+      if(pin.length < pinDots.length) {
+        pin += k.textContent;
+        updateDots();
+        errorMsg.style.display = 'none';
+      }
+    };
+  });
+
+  // Borrar número
+  delKey.onclick = () => {
+    if(pin.length > 0) {
+      pin = pin.slice(0,-1);
+      updateDots();
+      errorMsg.style.display = 'none';
+    }
+  };
+
+  // Verificar PIN
+  btnVerify.onclick = () => {
+    if(pin.length !== correctPin.length) {
+      errorMsg.textContent = "Completa el código";
+      errorMsg.style.display = 'block';
+      return;
+    }
+    if(pin === correctPin) {
+      screen2.style.display = 'none';
+      screen3.style.display = 'flex';
+      attemptsFinalDiv.textContent = `Intentos fallidos: ${attemptsCount}`;
+      // Set background image on final screen
+      screen3.style.backgroundImage = `url(${finalBackgroundImageURL})`;
+      spawnHearts();
+    } else {
+      attemptsCount++;
+      errorMsg.textContent = "Error";
+      errorMsg.style.display = 'block';
+      attemptsDiv.textContent = `Intentos fallidos: ${attemptsCount}`;
+      resetPin();
+    }
+  };
+
+  // Generar corazones cayendo
+  function spawnHearts() {
+    const totalHearts = 25;
+    for(let i=0; i<totalHearts; i++) {
+      const heart = document.createElement('div');
+      heart.classList.add('falling-heart');
+      heart.style.left = Math.random()*100 + 'vw';
+      heart.style.animationDuration = (4 + Math.random()*3) + 's';
+      heart.style.animationDelay = (i*0.2) + 's';
+      screen3.appendChild(heart);
+      // Remove hearts after animation
+      setTimeout(() => {
+        heart.remove();
+      },7000);
+    }
+  }
+</script>
+</body>
+</html>
